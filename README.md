@@ -39,7 +39,7 @@ Set Production `setx ASPNETCORE_ENVIRONMENT "Production"`
 
 # Angular 2 client
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.2.0.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.2.4.
 
 ## Restore dependencies
 
