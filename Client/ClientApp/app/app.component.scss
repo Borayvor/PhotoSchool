@@ -1,0 +1,28 @@
+.grid {
+  display: grid;
+  grid-gap: 10px;
+  grid-template-rows: [first] 70px [line2] 100px [line3] auto [line4] 50px [end]; // 1fr 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-areas: "navigation navigation navigation" ". head ." ". cont ." "foot foot foot";
+  background-color: burlywood;
+}
+
+.header {
+  background-color: lime;
+  grid-area: head;
+}
+
+.navigation {
+  background-color: lightblue;
+  grid-area: navigation;
+}
+
+.content {
+  background-color: yellow;
+  grid-area: cont;
+}
+
+.footer {
+  background-color: brown;
+  grid-area: foot;
+}

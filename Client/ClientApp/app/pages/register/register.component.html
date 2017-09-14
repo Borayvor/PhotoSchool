@@ -1,0 +1,12 @@
+﻿<form novalidate [formGroup]="form" (ngSubmit)="form.valid && onSubmit()">
+  <md-card>
+    <md-card-title>Register a new user</md-card-title>
+    <hr>
+    <md-card-content>
+      <app-dynamic-form-question [question]="viewModel.username" [form]="form"></app-dynamic-form-question>
+      <app-dynamic-form-question [question]="viewModel.password" [form]="form"></app-dynamic-form-question>
+      <app-dynamic-form-question [question]="viewModel.confirmPassword" [form]="form"></app-dynamic-form-question>
+    </md-card-content>
+    <button md-raised-button [disabled]="!form.valid">Register</button>
+  </md-card>
+</form>

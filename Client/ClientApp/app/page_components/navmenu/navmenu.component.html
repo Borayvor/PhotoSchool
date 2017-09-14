@@ -1,0 +1,24 @@
+<nav class="nav">
+  <md-nav-list class="links">
+    <md-list-item>
+      <a [routerLinkActive]="['link-active']" [routerLink]="['/home']" md-button>
+        <i class="fa fa-home fa-fw" aria-hidden="true"></i> Home
+      </a>
+    </md-list-item>
+    <md-list-item>
+      <a [routerLinkActive]="['link-active']" [routerLink]="['/register']" md-button>
+        <i class="fa fa-registered fa-fw" aria-hidden="true"></i> Register
+      </a>
+    </md-list-item>
+    <md-list-item>
+      <a [routerLinkActive]="['link-active']" [routerLink]="['/login']" md-button>
+        <i class="fa fa-sign-in fa-fw" aria-hidden="true"></i> Login
+      </a>
+    </md-list-item>
+    <md-list-item>
+      <a (click)="onLogoutClick()" md-button>
+        <i class="fa fa-sign-out fa-fw" aria-hidden="true"></i> Logout
+      </a>
+    </md-list-item>
+  </md-nav-list>
+</nav>

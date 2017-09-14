@@ -1,0 +1,8 @@
+<div [formGroup]="form">
+  <div [ngSwitch]="question.controlType">
+    <md-input-container *ngSwitchCase="'textbox'">
+      <input mdInput [formControlName]="question.key" [id]="question.key" [type]="question.type" placeholder="{{question.label}}">
+      <md-error>{{question.errorMessage}}</md-error>
+    </md-input-container>
+  </div>
+</div>

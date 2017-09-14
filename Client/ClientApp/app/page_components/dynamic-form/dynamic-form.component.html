@@ -1,0 +1,6 @@
+<form novalidate [formGroup]="form">
+  <div *ngFor="let question of questions">
+    <app-dynamic-form-question [question]="question" [form]="form"></app-dynamic-form-question>
+  </div>
+  <button md-raised-button [disabled]="!form.valid">Login</button>
+</form>
