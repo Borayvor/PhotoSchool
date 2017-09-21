@@ -26,7 +26,7 @@ Navigate to `Server` folder. Run `dotnet build` to the project and its dependenc
 
 ## Release
 
-Navigate to `Server` folder. Run `dotnet run --configuration Release` to the project and its dependencies into a set of binaries. The build artifacts will be stored in the `wwwroot/` directory for `client` and in the `bin/Debug/` for `Server`.
+Navigate to `Server` folder. Run `dotnet run --configuration Release` to the project and its dependencies into a set of binaries. The build artifacts will be stored in the `wwwroot/` directory for `client` and in the `bin/Release/` for `Server`.
 
 ## Hosting environment
 
