@@ -4,20 +4,17 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
 using Server.Auth;
 using Server.Data;
 using Server.Data.Common;
-using Server.EnumTypes;
-using Server.ViewModels;
+using Server.Infrastructure.UserSessionUtils;
 
 namespace Server
 {
@@ -49,9 +46,6 @@ namespace Server
       .AddJwtBearer(options =>
       {
         options.Configuration = new OpenIdConnectConfiguration();
-        options.Configuration.HttpLogoutSupported = true;
-
-        options.SaveToken = true;
 
         // ONLY FOR DEVELOPMENT !!!
         options.RequireHttpsMetadata = false;
@@ -82,14 +76,20 @@ namespace Server
       {
         auth.AddPolicy(
           "Bearer",
-          new AuthorizationPolicyBuilder()
-          .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme‌​)
+          new AuthorizationPolicyBuilder(JwtBearerDefaults.AuthenticationScheme)
           .RequireAuthenticatedUser()
           .Build());
+
+        auth.AddPolicy(
+         "SessionAuth",
+         policy => policy.Requirements.Add(new SessionAuthorizeRequirement()));
       });
+
+      services.AddSingleton<IAuthorizationHandler, SessionAuthorizeHandler>();
 
       // Add framework services.
       services.AddMvc();
+      services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
       services.Configure<MongoDbSettings>(options =>
       {
@@ -100,6 +100,7 @@ namespace Server
 
       services.AddScoped<IMongoDbContext, MongoDbContext>();
       services.AddScoped(typeof(IMongoDbRepository<>), typeof(MongoDbRepository<>));
+      services.AddSingleton<IUserSessionManager, UserSessionManager>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

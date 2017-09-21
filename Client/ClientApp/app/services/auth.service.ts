@@ -1,4 +1,4 @@
-﻿import { CookieService } from 'angular2-cookie/services/cookies.service';
+import { CookieService } from 'angular2-cookie/services/cookies.service';
 import { Injectable } from '@angular/core';
 import { Headers, Http, Response } from '@angular/http';
 
@@ -10,6 +10,7 @@ import { UserAuthModel } from './../models/user-auth.model';
 import { HttpService } from './http.service';
 
 import { HttpRequestOptions } from './../models/http-request-options';
+import { CookieOptionsArgs } from "angular2-cookie/services/cookie-options-args.model";
 
 @Injectable()
 export class AuthService {
@@ -41,8 +42,11 @@ export class AuthService {
         const result = response.json() as RequestResultModel;
 
         if (result.State === 1) {
-          const json = result.Data as any;
-          this.cookieService.put(this.tokeyKey, json.accessToken);
+          const resultData = result.Data as any;
+          const cookieOptions: CookieOptionsArgs = { expires: new Date(resultData.expiresIn) };
+          console.log(cookieOptions);
+
+          this.cookieService.put(this.tokeyKey, resultData.accessToken, cookieOptions);
         }
 
         return result;

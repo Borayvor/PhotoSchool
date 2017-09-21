@@ -36,5 +36,16 @@ namespace Server.Data
         cm.MapMember(c => c.Password).SetIsRequired(true);
       });
     }
+
+    private static void RegisterClassMapUserSession()
+    {
+      BsonClassMap.RegisterClassMap<UserSession>(cm =>
+      {
+        cm.AutoMap();
+        cm.MapMember(c => c.OwnerUserId).SetIsRequired(true);
+        cm.MapMember(c => c.AuthToken).SetIsRequired(true);
+        cm.MapMember(c => c.ExpirationDateTime).SetIsRequired(true);
+      });
+    }
   }
 }

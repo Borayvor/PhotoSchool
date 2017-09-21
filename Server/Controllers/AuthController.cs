@@ -1,35 +1,32 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Security.Principal;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Server.Auth;
 using Server.Data.Common;
 using Server.Data.Models;
 using Server.EnumTypes;
+using Server.Infrastructure.UserSessionUtils;
 using Server.ViewModels;
 
 namespace Server.Controllers
 {
-  [Route("api/[controller]")]
+  [Route("api/[controller]/[action]")]
   [AutoValidateAntiforgeryToken]
   public class AuthController : Controller
   {
     private readonly IMongoDbRepository<User> users;
+    private readonly IUserSessionManager userSessionManager;
 
-    public AuthController(IMongoDbRepository<User> users)
+    public AuthController(IMongoDbRepository<User> users, IUserSessionManager userSessionManager)
     {
       this.users = users;
+      this.userSessionManager = userSessionManager;
     }
 
-    [HttpPost("Register")]
+    [HttpPost]
     public async Task<string> Register([FromBody]UserViewModel user)
     {
       if (!this.ModelState.IsValid)
@@ -71,7 +68,7 @@ namespace Server.Controllers
       }
     }
 
-    [HttpPost("Login")]
+    [HttpPost]
     public async Task<string> Login([FromBody]UserViewModel user)
     {
       if (!this.ModelState.IsValid)
@@ -87,19 +84,18 @@ namespace Server.Controllers
 
       if (existUser != null)
       {
-        var requestAt = DateTime.UtcNow;
-        var expiresIn = requestAt + TokenAuthOption.ExpiresSpan;
-        var token = this.GenerateToken(existUser, expiresIn);
+        var userSession = await this.userSessionManager.CreateUserSession(existUser);
+        var isUserSessionDeleted = await this.userSessionManager.DeleteExpiredSessions(this.HttpContext);
 
         return JsonConvert.SerializeObject(new RequestResultViewModel
         {
           State = RequestState.Success,
           Data = new
           {
-            requertAt = requestAt,
-            expiresIn = TokenAuthOption.ExpiresSpan.TotalSeconds,
+            requertAt = userSession.CreatedOn,
+            expiresIn = userSession.ExpirationDateTime,
             tokeyType = TokenAuthOption.TokenType,
-            accessToken = token
+            accessToken = userSession.AuthToken
           }
         });
       }
@@ -113,57 +109,41 @@ namespace Server.Controllers
       }
     }
 
-    [HttpGet("Logout")]
+    [HttpGet]
     [Authorize("Bearer")]
-    public async Task<string> Logout()
+    public string Logout()
     {
       // TODO: implement Logout
-      Console.WriteLine("Logout !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");  
-   
+      Console.WriteLine("Logout !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
       return JsonConvert.SerializeObject(new RequestResultViewModel
       {
-        State = RequestState.Success,
-        Msg = signOutResult.ToString()
+        State = RequestState.Success
       });
     }
 
-    [HttpGet("GetUserInfo")]
+    [HttpGet]
     [Authorize("Bearer")]
+    [Authorize("SessionAuth")]
     public string GetUserInfo()
     {
-      var claimsIdentity = this.User.Identity as ClaimsIdentity;        
+      var headerAuth = (string)this.Request.Headers["Authorization"];
+      var token = string.Empty;
+
+      if (!string.IsNullOrWhiteSpace(headerAuth))
+      {
+        token = headerAuth.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[1];
+      }
 
       return JsonConvert.SerializeObject(new RequestResultViewModel
       {
         State = RequestState.Success,
         Data = new
         {
-          UserName = claimsIdentity.Name
+          Username = this.User.Identity.Name,
+          Token = token
         }
       });
-    }
-
-    private string GenerateToken(User user, DateTime expires)
-    {
-      var handler = new JwtSecurityTokenHandler();
-
-      ClaimsIdentity identity = new ClaimsIdentity(
-          new GenericIdentity(user.Username, "TokenAuth"),
-          new[] { new Claim("Id", user.Id.ToString()) });
-
-      this.User.AddIdentity(identity);
-
-      var securityToken = handler.CreateToken(new SecurityTokenDescriptor
-      {
-        Issuer = TokenAuthOption.Issuer,
-        Audience = TokenAuthOption.Audience,
-        SigningCredentials = TokenAuthOption.SigningCredentials,
-        Subject = identity,
-        Expires = expires
-      });
-
-      return handler.WriteToken(securityToken);
     }
   }
 }
